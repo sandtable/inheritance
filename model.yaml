@@ -1,0 +1,119 @@
+project: inheritance
+
+version: 0.0.6.0
+
+description: |
+  Model of inheritance for BIT.
+
+sim_files:
+  - type: simpy_module
+    filepath: adapter.py
+  - type: python
+    filepath: inheritance.py
+  - type: python
+    filepath: scenarios.py
+  - type: python
+    filepath: sinks.py
+
+control_parameters:
+  logging: debug
+  ticks: 150
+  agents: 10000
+  # seed: 0
+  sinks: [CommonSink, IndividualSink, TrustsSink]
+  start_year: 2016
+
+replications: 1
+
+model_parameters:
+  - name: inheritance
+    description: Type of inheritance, direct or trust
+    type: str
+    value: direct
+    discrete_set: [direct, trust]
+
+  - name: trust_first_generation
+    description: First generation to benefit from trusts (1 = children)
+    type: int
+    value: 2
+
+  - name: trust_last_generation
+    description: Last generation to benefit from trusts (1 = children)
+    type: int
+    value: 3
+
+  - name: assortative_mating
+    description: Strength of assortative mating (0 = none, 1 = very strong)
+    type: real
+    value: 0.25
+    # Value found by counting number of agents coupling within their
+    # education group (0-2 or 4) relative to that expected by chance.
+    # Description of tables 3A/B in
+    # http://webarchive.nationalarchives.gov.uk/20130401151715/http://www.education.gov.uk/publications/eOrderingDownload/RW22.pdf
+    # suggest the ratio should be about 1.4-1.5, which is achieved
+    # with assortative_mating=0.25.
+
+  - name: savings_rate
+    description: Fraction of income that gets saved
+    type: real
+    value: 0.05
+
+  - name: interest_rate
+    description: Interest rate for wealth and trusts
+    type: real
+    value: 0.03
+
+
+model_data_files:
+
+  - filepath: data/f_as.npz
+    dataset: f_as
+
+  - filepath: data/fr_a.npz
+    dataset: fr_a
+
+  - filepath: data/D_yl.npz
+    dataset: D_yl
+
+  - filepath: data/X_say.npz
+    dataset: X_say
+
+  - filepath: data/c_a.npz
+    dataset: c_a
+
+  - filepath: data/M_as.npz
+    dataset: M_as
+
+  - filepath: data/C_as.npz
+    dataset: C_as
+
+  - filepath: data/ch_ac.npz
+    dataset: ch_ac
+
+  - filepath: data/w_a.npz
+    dataset: w_a
+
+  - filepath: data/w_e.npz
+    dataset: w_e
+
+  - filepath: data/w.npz
+    dataset: w
+
+  - filepath: data/cw_f.npz
+    dataset: cw_f
+
+  - filepath: data/i_as.npz
+    dataset: i_as
+
+  - filepath: data/i_e.npz
+    dataset: i_e
+
+  - filepath: data/i_f.npz
+    dataset: i_f
+
+  - filepath: data/f_ea.npz
+    dataset: f_ea
+
+  - filepath: data/f_es.npz
+    dataset: f_es
+
