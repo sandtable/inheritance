@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -43,7 +42,7 @@ class HDFSink(Sink):
 
         store = pd.HDFStore(self._file_path, complib='blosc', complevel=9)
 
-        for name, data in self._data.iteritems():
+        for name, data in self._data.items():
             self._logger.info("saving dataset to hdf store '%s'", name)
             store[name] = data
         store.close()
@@ -119,7 +118,7 @@ class CommonSink(Sink):
         self.n_agent[tick] = alive.sum()
         self.mean_age[tick] = age[alive].mean()
         self.n_female[tick] = female[alive].sum()
-        self.skill_dist[:, tick] = np.histogram(skill[alive], bins=range(6))[0]
+        self.skill_dist[:, tick] = np.histogram(skill[alive], bins=list(range(6)))[0]
         self.mean_wealth[tick] = wealth[alive].mean()
         self.n_partnered[tick] = (partner >= 0).sum()
         self.n_coupling[tick] = coupling.sum()
@@ -140,7 +139,7 @@ class CommonSink(Sink):
         self.trust_amount[tick] = trust_amount.sum()
         self.n_from_trust[tick] = (trust_amount > 0).sum()
 
-        bins = range(self.max_age+1)
+        bins = list(range(self.max_age+1))
         self.n_agent_by_age[tick, :] = np.histogram(age[alive], bins=bins)[0]
         self.n_female_by_age[tick, :] = np.histogram(age[alive & female], bins=bins)[0]
         self.mean_wealth_by_age[tick, :] = mean_by(wealth[alive], age[alive], 0, self.max_age)
@@ -151,7 +150,7 @@ class CommonSink(Sink):
         self.n_baby_by_age[tick, :] = np.histogram(age[have_baby], bins=bins)[0]
         self.mean_savings_by_age[tick, :] = mean_by(savings[alive], age[alive], 0, self.max_age)
         self.mean_interest_by_age[tick, :] = mean_by(interest[alive], age[alive], 0, self.max_age)
-        n_children = np.histogram(parents.ravel(), bins=range(len(age)+1))[0]
+        n_children = np.histogram(parents.ravel(), bins=list(range(len(age)+1)))[0]
         self.mean_children_by_age[tick, :] = mean_by(n_children[alive], age[alive], 0, self.max_age)
         self.n_female_0_children[tick, :] = np.histogram(age[alive & female & (n_children == 0)], bins=bins)[0]
         self.n_female_1_children[tick, :] = np.histogram(age[alive & female & (n_children == 1)], bins=bins)[0]
@@ -166,7 +165,7 @@ class CommonSink(Sink):
 
     def flush(self):
         sink = self._store
-        ticks = pd.Series(range(len(self.n_agent)), name='tick')
+        ticks = pd.Series(list(range(len(self.n_agent))), name='tick')
 
         data = pd.DataFrame({
             'n_agent': self.n_agent,
@@ -200,7 +199,7 @@ class CommonSink(Sink):
                      'trust_amount', 'n_from_trust']]
         sink.write('data', data)
 
-        skill_label = ['skill_{}'.format(i) for i in xrange(5)]
+        skill_label = ['skill_{}'.format(i) for i in range(5)]
         skill_dist = pd.DataFrame(self.skill_dist.T, columns=skill_label, index=ticks)
         sink.write('skill_dist', skill_dist)
 
@@ -349,7 +348,7 @@ class IndividualSink(Sink):
             new = old[:, :n_agent]
             setattr(self, attr, new)
 
-        ticks = pd.Series(range(self.n_tick), name='tick')
+        ticks = pd.Series(list(range(self.n_tick)), name='tick')
 
         ticks_by_agents = np.outer(ticks.values, np.ones(n_agent, int))
         agents_by_agents = np.outer(np.ones(len(ticks), int), np.arange(n_agent, dtype=int))
@@ -433,7 +432,7 @@ class TrustsSink(Sink):
             new = old[:, :self.n_write]
             setattr(self, attr, new)
 
-        ticks = pd.Series(range(self.n_tick), name='tick')
+        ticks = pd.Series(list(range(self.n_tick)), name='tick')
 
         ticks_by_trusts = np.outer(ticks.values, np.ones(self.n_write, int))
         trusts_by_trusts = np.outer(np.ones(len(ticks), int), np.arange(self.n_write, dtype=int))
@@ -452,7 +451,7 @@ class TrustsSink(Sink):
         sink.write('trusts', trusts, reset_index=False)
 
 def plot_history(data, agent, agent_numbers=True):
-    if isinstance(data, basestring):
+    if isinstance(data, str):
         data = pd.HDFStore(os.path.join(data, 'output', 'output.h5'))
     history = data.history
     life = history[history.agent == agent].set_index('tick')
@@ -469,7 +468,7 @@ def plot_history(data, agent, agent_numbers=True):
         in_relationship = (life.partner == partner).values
         partner_life = history[history.agent == partner].set_index('tick')
         partner_life.index = 2016 + partner_life.index
-        baby_series = baby_series | (in_relationship & partner_life.have_baby)        
+        baby_series = baby_series | (in_relationship & partner_life.have_baby)
         # Extend out a year to include the final months of the relationship
         in_relationship[1:] = (~partner_life.dying[:-1] & in_relationship[:-1]) | in_relationship[1:]
         in_relationship = in_relationship & (life.alive | life.dying)
@@ -521,7 +520,7 @@ def plot_history(data, agent, agent_numbers=True):
     plt.show()
 
 def get_history(data, agent):
-    if isinstance(data, basestring):
+    if isinstance(data, str):
         data = pd.HDFStore(os.path.join(data, 'output', 'output.h5'))
     events = []
     history = data.history
@@ -577,12 +576,9 @@ def generation_correlation(result, age, measure):
     measure = result.history[(result.history.age == age) & result.history.alive & ~result.history.dying].set_index('agent')[measure]
     tree = result.tree[result.tree.descendant.isin(agent) & result.tree.ancestor.isin(measure.index)]
     gencor = []
-    for generations in xrange(1, tree.generations.max()+1):
+    for generations in range(1, tree.generations.max()+1):
         tree_cut = tree[tree.generations == generations]
         measure_ancestor = measure.loc[tree_cut.ancestor].groupby(tree_cut.descendant.values).mean()
         measure_descendant = measure.loc[measure_ancestor.index]
         gencor.append(np.corrcoef(measure_ancestor, measure_descendant)[0, 1])
     return gencor
-
-
-    

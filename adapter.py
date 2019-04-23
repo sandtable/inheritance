@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import os
 import sys
 import yaml
@@ -51,9 +52,9 @@ def merge_namedtuple(base, overriding):
     elems = []
     for k in keys:
         if k in overriding._fields:
-            elems.append(overriding.__dict__[k])
+            elems.append(overriding._asdict()[k])
         else:
-            elems.append(base.__dict__[k])
+            elems.append(base._asdict()[k])
 
     t = namedtuple(type(base).__name__, keys)
     return t(*elems)
@@ -98,25 +99,25 @@ class SimulatorAdapter(object):
     def run(self):
 
         #intialisation of context
-        tensors = map(load_model_tensor, self.inputs.values())
-        arrays, metadata = zip(*tensors) if tensors else ([], [])
-        data_names = map(lambda x: str(x.name), metadata)
+        tensors = list(map(load_model_tensor, self.inputs.values()))
+        arrays, metadata = list(zip(*tensors)) if tensors else ([], [])
+        data_names = list(map(lambda x: str(x.name), metadata))
         ModelData = namedtuple('ModelData', ' '.join(data_names))
         data = ModelData(*arrays)
         ModelMeta = namedtuple('ModelMeta', ' '.join(data_names))
         meta = ModelMeta(*metadata)
 
         #TODO: would be nice to have type information
-        parm_names, parm_values = zip(*self.model_parameters)
+        parm_names, parm_values = list(zip(*self.model_parameters))
         ModelParm = namedtuple('ModelParm', ' '.join(parm_names))
-        parm = ModelParm(*map(convert_type, parm_values))
+        parm = ModelParm(*list(map(convert_type, parm_values)))
 
         #TODO: again it would be nice to parse type information
-        temp = list(self.control_parameters.iteritems())
+        temp = list(self.control_parameters.items())
         temp += [('random_state', np.random.RandomState(seed=int(self.control_parameters['seed'])))] #add random state
-        ctrl_names, ctrl_values = zip(*temp)
+        ctrl_names, ctrl_values = list(zip(*temp))
         ModelCtrl = namedtuple('ModelCtrl', ' '.join(ctrl_names))
-        ctrl = ModelCtrl(*map(convert_type, ctrl_values))
+        ctrl = ModelCtrl(*list(map(convert_type, ctrl_values)))
 
         ctx = ModelContext(data=data, parm=parm , ctrl=ctrl, meta=meta, logger=logger)
 
@@ -126,7 +127,7 @@ class SimulatorAdapter(object):
 
         store = sinks.HDFSink(ctx, self.output_filename)
         sink = sinks.CompositeSink(
-            map(lambda s: getattr(sinks, s)(ctx, store), ctx.ctrl.sinks)
+            list(map(lambda s: getattr(sinks, s)(ctx, store), ctx.ctrl.sinks))
         )
         inheritance.simulate(ctx, sink)
 
@@ -140,7 +141,7 @@ class SimulatorAdapter(object):
 if __name__ == '__main__':
 
     assert len(sys.argv) == 2, 'missing configuration file'
-    config = yaml.load(open(sys.argv[1], 'r'))
+    config = yaml.load(open(sys.argv[1], 'r'), Loader=yaml.FullLoader)
 
     sim = SimulatorAdapter(config)
     sim.run()

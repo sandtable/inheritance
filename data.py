@@ -22,9 +22,9 @@ def save_tensor(name, description, tensor, dims, data_dir):
 def generate_data(name, description, fn, export=True, data_dir=DATA_DIR):
     """Generate a tensor and its metadata, save to file if requested."""
     tnsr, dims = fn()
-    print "{0}\t@{1:16}\t{2}".format(name, tnsr.shape, description)
+    print("{0}\t@{1}\t{2}".format(name, tnsr.shape, description))
     if tnsr.shape != tuple(map(len, dims)):
-        print "tensor={}, dims={}".format(tnsr.shape, tuple(map(len, dims)))
+        print("tensor={}, dims={}".format(tnsr.shape, tuple(map(len, dims))))
     assert np.all(tnsr.shape == tuple(map(len, dims)))
     if export:
         save_tensor(name, description, tnsr, dims, data_dir)
@@ -116,9 +116,9 @@ def coupling_rate():
     n_age = len(n_female)
     n_marriage = pd.read_excel(path_marriage, 'Table 1', header=None)
     n_marriage = n_marriage.values[30:43, 2]
-    edges = [16] + range(20, 80, 5) + [85]
+    edges = [16] + list(range(20, 80, 5)) + [85]
     marriage_rate = np.zeros(n_age)
-    for idx in xrange(len(edges)-1):
+    for idx in range(len(edges)-1):
         marriage_rate[edges[idx]:edges[idx+1]] = (
             n_marriage[idx] / n_female[edges[idx]:edges[idx+1]].sum())
     # 47.7% of births are outside of marriage, so boost the coupling rate accordingly
@@ -128,8 +128,8 @@ def coupling_rate():
     births.index = ['within', 'outside']
     births = births.drop('Unnamed: 0', axis=1)
     married_fraction = np.zeros_like(marriage_rate)
-    edges = [16] + range(20, 45, 5) + [85]
-    for idx in xrange(len(edges)-1):
+    edges = [16] + list(range(20, 45, 5)) + [85]
+    for idx in range(len(edges)-1):
         married_fraction[edges[idx]:edges[idx+1]] = (
             births.loc['within'].values[idx] / births.sum().values[idx])
     return marriage_rate / married_fraction, (np.arange(n_age), )
@@ -138,7 +138,7 @@ def divorce_rate():
     """Return array of divorce rate as function of marriage year and duration."""
     path = os.path.join(INPUT_DIR, 'ONS/ageatmarriagedurationofmarriageandcohortanalysestcm77424213.xls')
     cumulative = pd.read_excel(path, 'Table 2', header=6)
-    cumulative.index = [int(i[:4]) if isinstance(i, basestring) else i for i in cumulative.index.get_level_values(0)]
+    cumulative.index = [int(i[:4]) if isinstance(i, str) else i for i in cumulative.index.get_level_values(0)]
     cumulative = cumulative.loc[1963:2012]
     # For future predictions, assume divorce rate at anniversary X is the same
     # as for the most recent cohort to have data for that anniversary
@@ -167,7 +167,7 @@ def n_children():
     data = pd.read_excel(path, 'Table 3', header=7)
     data = data[np.isfinite(data.index.get_level_values(0))]
     # Fill in blank "age" values
-    index = pd.DataFrame(zip(*data.index.values)).T
+    index = pd.DataFrame(list(zip(*data.index.values))).T
     index = index.replace('45 3', 45).fillna(method='pad')
     index = pd.MultiIndex.from_tuples([tuple(x) for x in index.values])
     year_idx = index.get_level_values(0)
@@ -213,7 +213,7 @@ def median_wealth_by_education():
 def gini_data():
     """Return cumulative wealth of households."""
     path = os.path.join(INPUT_DIR, 'ONS/figure7_tcm77-272248.xls')
-    data = pd.read_excel(path, 'Background figures', header=2, parse_cols=[3, 4])
+    data = pd.read_excel(path, 'Background figures', header=2, usecols=[3, 4])
     data = data[np.isfinite(data.values)]
     data /= 100.0
     return data['Cumulative % wealth'], (data['Cumulative % households'], )
@@ -221,7 +221,7 @@ def gini_data():
 def mean_wealth():
     """Return mean wealth of UK households."""
     path = os.path.join(INPUT_DIR, 'ONS/table9_tcm77-271482.xls')
-    wealth = pd.read_excel(path, 'Table 9', header=5, parse_cols=[1, 5, 6, 7], skip_footer=5)
+    wealth = pd.read_excel(path, 'Table 9', header=5, usecols=[1, 5, 6, 7], skip_footer=5)
     mean = (0.01 * wealth['Percentage'] * wealth[u'Mean £']).sum()
     return np.array([mean]), (np.array([0.0]), )
 
@@ -259,7 +259,7 @@ def education_by_x(path, values, labels):
     """Return fraction at each education level as function of x."""
     # No quals, 1-4 GCSEs, 5+ GCSEs or apprenticeship, 2+ A-levels, degree
     data = pd.read_excel(path, 'Sheet 1', header=10, index_col=0)[2:7]
-    skill = range(5)
+    skill = list(range(5))
     skill_labels = [
         ['No qualifications'],
         ['Level 1 qualifications'],
@@ -312,4 +312,3 @@ if __name__ == '__main__':
     generate_data('i_f'   , 'income distribution (f)', income_distribution)
     generate_data('f_ea'  , 'fraction by education and age (E, A)', education_by_age)
     generate_data('f_es'  , 'fraction by education and sex (E, S)', education_by_sex)
-

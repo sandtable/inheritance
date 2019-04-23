@@ -1,7 +1,6 @@
 from collections import namedtuple
 import numpy as np
 from scipy import sparse as sps
-# import pandas as pd
 
 
 def choose_age(n_agent, f_as, rng):
@@ -19,7 +18,7 @@ def choose_skill(age, female, f_ea, f_ea_age, f_es, rng):
     # Return skill on 0-4 int range
     # First set probabilities based on age
     prob = np.array([
-        np.interp(age, f_ea_age, f_ea[i, :]) for i in xrange(len(f_ea))]).T
+        np.interp(age, f_ea_age, f_ea[i, :]) for i in range(len(f_ea))]).T
     # Ensure probabilities sum to 1
     prob /= prob.sum(axis=1, keepdims=True)
     # Then adjust based on sex
@@ -125,10 +124,10 @@ def multinomial(prob, unique=False, rng=np.random):
         if unique:
             # Would be good to find a way to vectorise this
             prob[:, choice] = 0.0
-            rechoose = np.array([idx for idx in xrange(len(choice))
+            rechoose = np.array([idx for idx in range(len(choice))
                                  if np.any(choice[:idx] == choice[idx]) and
                                  (prob[idx, :].sum() > 0)])
-            hamstrung = np.array([idx for idx in xrange(len(choice))
+            hamstrung = np.array([idx for idx in range(len(choice))
                                   if np.any(choice[:idx] == choice[idx]) and
                                   (prob[idx, :].sum() == 0)]).astype(int)
             choice[hamstrung] = -1
@@ -199,7 +198,7 @@ def trim_death_rate(X, dims, start_year, ticks):
         X_old = X.copy()
         X = np.zeros((X.shape[0], X.shape[1], ticks))
         X[:, :, :X_old.shape[2]] = X_old
-        for idx in xrange(X_old.shape[2], ticks):
+        for idx in range(X_old.shape[2], ticks):
             X[:, :, idx] = X_old[:, :, -1]
     return X
 

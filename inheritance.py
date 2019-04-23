@@ -20,7 +20,7 @@ def assign_skill(skill_mother, skill_father, f_ea, rng):
     skill_child_rank[np.argsort(skill_child_rank)] = np.linspace(0, 1, len(skill_child_rank))
     skill_child = np.zeros(len(skill_child_rank), int)-1
     limits = np.hstack((0, np.cumsum(f_ea[:, 0])))
-    for i in xrange(5):
+    for i in range(5):
         skill_child[(skill_child_rank >= limits[i]) & (skill_child_rank <= limits[i+1])] = i
     return skill_child
 
@@ -90,10 +90,10 @@ def multinomial(prob, unique=False, rng=np.random):
         if unique:
             # Would be good to find a way to vectorise this
             prob[:, choice] = 0.0
-            rechoose = np.array([idx for idx in xrange(len(choice))
+            rechoose = np.array([idx for idx in range(len(choice))
                                  if np.any(choice[:idx] == choice[idx]) and
                                  (prob[idx, :].sum() > 0)])
-            hamstrung = np.array([idx for idx in xrange(len(choice))
+            hamstrung = np.array([idx for idx in range(len(choice))
                                   if np.any(choice[:idx] == choice[idx]) and
                                   (prob[idx, :].sum() == 0)]).astype(int)
             choice[hamstrung] = -1
@@ -188,7 +188,7 @@ def execute_will(wealth, dying, partner, parents, alive, age, tree, trusts,
     """Update wealth based on inheritance."""
     n_agent = len(wealth)
     can_inherit = alive & ~dying
-    n_children = np.histogram(parents[can_inherit, :].ravel(), bins=range(n_agent+1))[0]
+    n_children = np.histogram(parents[can_inherit, :].ravel(), bins=list(range(n_agent+1)))[0]
     if inheritance == 'direct':
         direct_inheritance(wealth, dying, can_inherit, partner, parents, n_children)
     elif inheritance == 'trust':
@@ -203,7 +203,7 @@ def direct_inheritance(wealth, dying, can_inherit, partner, parents, n_children)
     n_agent = len(wealth)
     parents_together = (can_inherit & (partner[parents[:, 1]] == parents[:, 0]) &
                         (can_inherit[parents[:, 0] | can_inherit[parents[:, 1]]]))
-    n_children_current = np.histogram(parents[parents_together, :], bins=range(n_agent+1))[0]
+    n_children_current = np.histogram(parents[parents_together, :], bins=list(range(n_agent+1)))[0]
     n_partner = ((partner >= 0) & can_inherit[partner]).astype(int)
     n_dependents = (n_children + n_partner).astype(float)
     # Fraction of wealth to each person in each category
@@ -267,17 +267,17 @@ def pay_from_trusts(trusts, wealth, tree, beneficiaries, future_beneficiaries):
 
 def apply_to_descendants(base_pop, population, parents, level, func):
     for idx in (0, 1):
-        print 'Matching at level', level
-        print len(population), 'in population'
+        print('Matching at level', level)
+        print(len(population), 'in population')
         parent = parents[population, idx]
         matched = (parent >= 0)
-        print matched.sum(), 'matched'
+        print(matched.sum(), 'matched')
         subset = population[matched]
         if level == 1:
-            print 'Calling function'
+            print('Calling function')
             func(base_pop[subset], parent[subset])
         if level > 1:
-            print 'Next level'
+            print('Next level')
             apply_to_descendants(base_pop[subset], subset, parents, level-1, func)
     return
 
@@ -286,7 +286,7 @@ def count_descendants(population, parents, level):
     n_descendant = np.zeros(n_agent)
     population = np.where(population)[0]
     def increment(desc, ansc):
-        n_descendant[:] += np.histogram(ansc, bins=range(n_agent+1))
+        n_descendant[:] += np.histogram(ansc, bins=list(range(n_agent+1)))
     apply_to_descendants(
         population, population, parents, level, increment)
     return n_descendant
@@ -295,7 +295,7 @@ def payout(trusts, wealth, parents, beneficiaries, n_beneficiaries, n_future, le
     n_total = n_beneficiaries + n_future
     this_level = (trusts['generations'] == level)
     # Amount left by each dead agent at this generational level
-    to_pay = np.histogram(trusts['ancestor'][this_level], bins=range(len(wealth)+1),
+    to_pay = np.histogram(trusts['ancestor'][this_level], bins=list(range(len(wealth)+1)),
                           weights=trusts['amount'][this_level])
     def pay(desc, ansc):
         wealth[desc] += (to_pay / n_total)[ansc]
@@ -322,7 +322,7 @@ def check_partners(partner):
     unique = len(np.unique(partner[partner >= 0])) == len(partner[partner >= 0])
     message = 'Duplicate values in partner'
     if not unique:
-        n_partner = np.histogram(partner, bins=range(len(partner)+1))[0]
+        n_partner = np.histogram(partner, bins=list(range(len(partner)+1)))[0]
         duplicate = np.where(n_partner > 1)[0]
         for d in duplicate:
             message = message + ' [{} ({}): {}]'.format(
@@ -339,8 +339,8 @@ def simulate(ctx, sink):
     rng = ctx.ctrl.random_state
 
     inheritance = ctx.parm.inheritance
-    trust_levels = range(int(ctx.parm.trust_first_generation),
-                         int(ctx.parm.trust_last_generation)+1)
+    trust_levels = list(range(int(ctx.parm.trust_first_generation),
+                              int(ctx.parm.trust_last_generation)+1))
     assortative_mating = ctx.parm.assortative_mating
     savings_rate = ctx.parm.savings_rate
     interest_rate = ctx.parm.interest_rate
@@ -388,9 +388,9 @@ def simulate(ctx, sink):
     ctx.logger.info('mean age of partnered: %s (female), %s (male)', age[(partner >= 0) & female].mean(), age[(partner >= 0) & ~female].mean())
     ctx.logger.info('number with parents: %s, %s', (parents[:, 0] >= 0).sum(), (parents[:, 1] >= 0).sum())
 
-    n_tick = ctx.ctrl.ticks
+    n_tick = ctx.ctrl.ticks.item()
 
-    for tick in range(n_tick):
+    for tick in range(int(n_tick)):
 
         # The inescapable passage of time
         age[alive] += 1

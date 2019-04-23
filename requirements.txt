@@ -1,7 +1,8 @@
-numpy
-scipy
-pandas
-matplotlib
-pyyaml
-pytables
-xlrd
+numpy==1.16.2
+scipy==1.2.1
+pandas==0.21.0
+matplotlib==2.2.3
+pyyaml==5.1
+pytables==3.5.1
+xlrd==1.2.0
+future==0.17.1
