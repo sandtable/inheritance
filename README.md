@@ -77,3 +77,11 @@ Parameters of the model are set in `model.yaml`. Under `control_parameters` you 
 * `adapter.py`: wrapper for `inheritance.py` that loads in the data and parameters
 * `scenarios.py`: initialises agent population
 * `sinks.py`: processes output data
+
+
+## Resources
+
+PyData London 2017
+
+* Slides: https://www.slideshare.net/Sandtable/forecasting-social-inequality-using-agentbased-modelling
+* Video: https://www.youtube.com/watch?v=RglNX4c_dfc
