@@ -4,7 +4,7 @@ An agent-based model simulating the UK population, focusing on the effects of in
 
 ## Requirements
 
-* Python 2.7
+* Python 3.6
 * Packages listed in `requirements.txt`
 
 ## Running the simulation
@@ -12,10 +12,22 @@ An agent-based model simulating the UK population, focusing on the effects of in
 Before your first run, initialise the data:
 
 ```
+make data
+```
+
+or 
+
+```
 python data.py
 ```
 
 To run the simulation:
+
+```
+make run
+```
+
+or 
 
 ```
 python adapter.py model.yaml
